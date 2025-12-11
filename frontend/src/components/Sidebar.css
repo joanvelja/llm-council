@@ -50,11 +50,15 @@
 }
 
 .conversation-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 12px;
   margin-bottom: 4px;
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s;
+  position: relative;
 }
 
 .conversation-item:hover {
@@ -66,13 +70,93 @@
   border: 1px solid #4a90e2;
 }
 
+.conversation-item.confirming {
+  background: #fff3e0;
+  border: 1px solid #ff9800;
+}
+
+.conversation-content {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .conversation-title {
   color: #333;
   font-size: 14px;
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .conversation-meta {
   color: #999;
   font-size: 12px;
+}
+
+/* Delete button - hidden by default, shown on hover */
+.delete-btn {
+  opacity: 0;
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: opacity 0.2s, background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.conversation-item:hover .delete-btn {
+  opacity: 0.6;
+}
+
+.delete-btn:hover {
+  opacity: 1 !important;
+  background: rgba(239, 83, 80, 0.1);
+}
+
+/* Delete confirmation */
+.delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.delete-confirm-text {
+  font-size: 12px;
+  color: #e65100;
+  font-weight: 500;
+}
+
+.confirm-btn {
+  background: none;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 8px;
+  transition: all 0.2s;
+}
+
+.confirm-btn.yes {
+  color: #4caf50;
+  border-color: #4caf50;
+}
+
+.confirm-btn.yes:hover {
+  background: #4caf50;
+  color: white;
+}
+
+.confirm-btn.no {
+  color: #999;
+  border-color: #ccc;
+}
+
+.confirm-btn.no:hover {
+  background: #eee;
+  border-color: #999;
 }

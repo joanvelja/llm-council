@@ -1,0 +1,112 @@
+.model-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 24px;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.model-badge:hover {
+    background: #f8f9fa;
+    border-color: #ccc;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Sizes */
+.model-badge.sm {
+    padding: 4px 8px;
+    gap: 6px;
+}
+
+.model-badge.sm .badge-avatar {
+    width: 24px;
+    height: 24px;
+}
+
+.model-badge.sm .badge-name {
+    font-size: 0.75rem;
+}
+
+.model-badge.md .badge-avatar {
+    width: 32px;
+    height: 32px;
+}
+
+.model-badge.md .badge-name {
+    font-size: 0.85rem;
+}
+
+.model-badge.lg {
+    padding: 8px 16px;
+    gap: 10px;
+}
+
+.model-badge.lg .badge-avatar {
+    width: 40px;
+    height: 40px;
+}
+
+.model-badge.lg .badge-name {
+    font-size: 0.95rem;
+}
+
+/* Avatar container */
+.badge-avatar {
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.badge-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.badge-initial {
+    color: white;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.badge-name {
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    color: #444;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+/* Chairman styling */
+.model-badge.chairman {
+    background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+    border-color: #ffc107;
+}
+
+.model-badge.chairman:hover {
+    background: linear-gradient(135deg, #fff3cc 0%, #ffecb3 100%);
+    border-color: #ffb300;
+}
+
+.model-badge.chairman .badge-avatar {
+    box-shadow: 0 0 0 2px #ffc107;
+}
+
+.chairman-crown {
+    position: absolute;
+    top: -8px;
+    right: -4px;
+    font-size: 12px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}

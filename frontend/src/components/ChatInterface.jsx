@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import Stage1 from './Stage1';
 import Stage2 from './Stage2';
 import Stage3 from './Stage3';
+import CouncilPanel from './CouncilPanel';
 import './ChatInterface.css';
 
 export default function ChatInterface({
@@ -57,9 +58,14 @@ export default function ChatInterface({
     <div className="chat-interface">
       <div className="messages-container" ref={messagesContainerRef}>
         {conversation.messages.length === 0 ? (
-          <div className="empty-state">
-            <h2>Start a conversation</h2>
-            <p>Ask a question to consult the LLM Council</p>
+          <div className="ready-state">
+            <div className="ready-header">
+              <h2>Start a conversation</h2>
+              <p>Ask a question to consult the LLM Council</p>
+            </div>
+            {/* Debug: log config to console */}
+            {console.log('CouncilPanel config:', conversation.config)}
+            <CouncilPanel config={conversation.config} />
           </div>
         ) : (
           conversation.messages.map((msg, index) => (

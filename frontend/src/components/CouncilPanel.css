@@ -1,0 +1,122 @@
+.council-panel {
+    display: flex;
+    justify-content: center;
+    padding: 32px 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel-glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 28px 36px;
+    box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.06),
+        0 1px 2px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    max-width: 800px;
+    width: 100%;
+}
+
+/* Section styling */
+.council-section,
+.chairman-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+}
+
+.label-icon {
+    font-size: 1.1rem;
+}
+
+.label-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+}
+
+/* Council carousel - horizontal scrolling */
+.council-carousel {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    padding: 4px;
+}
+
+/* Divider */
+.panel-divider {
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(0, 0, 0, 0.08) 20%,
+            rgba(0, 0, 0, 0.08) 80%,
+            transparent 100%);
+}
+
+/* Reasoning indicators */
+.reasoning-section {
+    padding-top: 8px;
+}
+
+.reasoning-pills {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.reasoning-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #f3e5f5 0%, #e8eaf6 100%);
+    border: 1px solid #ce93d8;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #7b1fa2;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .panel-glass {
+        padding: 20px 16px;
+    }
+
+    .council-carousel {
+        flex-direction: column;
+        align-items: center;
+    }
+}
