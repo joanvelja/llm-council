@@ -1,0 +1,68 @@
+.config-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+}
+
+.config-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.config-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.model-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.model-chip {
+    display: inline-block;
+    padding: 4px 10px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #444;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    cursor: default;
+    transition: background-color 0.2s;
+}
+
+.model-chip:hover {
+    background: #f5f5f5;
+}
+
+.model-chip.chairman {
+    background: #e3f2fd;
+    border-color: #4a90e2;
+    color: #1565c0;
+}
+
+.reasoning-indicators {
+    margin-left: auto;
+}
+
+.reasoning-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #fff3e0;
+    border: 1px solid #ffb74d;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #e65100;
+    cursor: default;
+    margin-left: 4px;
+}

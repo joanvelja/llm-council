@@ -139,7 +139,7 @@ Models are hardcoded in `backend/config.py`. Chairman can be same or different f
 - Export conversations to markdown/PDF
 - Model performance analytics over time
 - Custom ranking criteria (not just accuracy/insight)
-- Support for reasoning models (o1, etc.) with special handling
+- Math-mode aware rendering (LaTeX, etc.) and code rendering (triple backticks blocks)
 
 ## Testing Notes
 

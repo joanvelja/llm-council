@@ -6,6 +6,20 @@ const API_BASE = 'http://localhost:8001';
 
 export const api = {
   /**
+   * Validate a model endpoint and get its capabilities.
+   */
+  async validateModel(modelId) {
+    const response = await fetch(`${API_BASE}/api/models/validate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ model_id: modelId }),
+    });
+    return response.json();
+  },
+
+  /**
    * List all conversations.
    */
   async listConversations() {
@@ -17,15 +31,15 @@ export const api = {
   },
 
   /**
-   * Create a new conversation.
+   * Create a new conversation with optional config.
    */
-  async createConversation() {
+  async createConversation(config = null) {
     const response = await fetch(`${API_BASE}/api/conversations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify(config ? { config } : {}),
     });
     if (!response.ok) {
       throw new Error('Failed to create conversation');

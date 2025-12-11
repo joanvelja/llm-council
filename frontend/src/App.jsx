@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatInterface from './components/ChatInterface';
+import ConversationSetup from './components/ConversationSetup';
+import ConfigHeader from './components/ConfigHeader';
 import { api } from './api';
 import './App.css';
 
@@ -9,6 +11,7 @@ function App() {
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [currentConversation, setCurrentConversation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
 
   // Load conversations on mount
   useEffect(() => {
@@ -41,16 +44,26 @@ function App() {
   };
 
   const handleNewConversation = async () => {
+    // Show setup modal instead of creating immediately
+    setShowSetup(true);
+  };
+
+  const handleStartConversation = async (config) => {
     try {
-      const newConv = await api.createConversation();
+      const newConv = await api.createConversation(config);
       setConversations([
-        { id: newConv.id, created_at: newConv.created_at, message_count: 0 },
+        { id: newConv.id, created_at: newConv.created_at, title: newConv.title || 'New Conversation', message_count: 0 },
         ...conversations,
       ]);
       setCurrentConversationId(newConv.id);
+      setShowSetup(false);
     } catch (error) {
       console.error('Failed to create conversation:', error);
     }
+  };
+
+  const handleCancelSetup = () => {
+    setShowSetup(false);
   };
 
   const handleSelectConversation = (id) => {
@@ -189,11 +202,22 @@ function App() {
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
       />
-      <ChatInterface
-        conversation={currentConversation}
-        onSendMessage={handleSendMessage}
-        isLoading={isLoading}
-      />
+      <div className="main-content">
+        {currentConversation?.config && (
+          <ConfigHeader config={currentConversation.config} />
+        )}
+        <ChatInterface
+          conversation={currentConversation}
+          onSendMessage={handleSendMessage}
+          isLoading={isLoading}
+        />
+      </div>
+      {showSetup && (
+        <ConversationSetup
+          onStart={handleStartConversation}
+          onCancel={handleCancelSetup}
+        />
+      )}
     </div>
   );
 }
