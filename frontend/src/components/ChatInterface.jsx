@@ -11,14 +11,19 @@ export default function ChatInterface({
   isLoading,
 }) {
   const [input, setInput] = useState('');
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Delay scroll to ensure layout is complete after fonts/content load
+    const timeoutId = setTimeout(scrollToBottom, 50);
+    return () => clearTimeout(timeoutId);
   }, [conversation]);
 
   const handleSubmit = (e) => {
@@ -50,7 +55,7 @@ export default function ChatInterface({
 
   return (
     <div className="chat-interface">
-      <div className="messages-container">
+      <div className="messages-container" ref={messagesContainerRef}>
         {conversation.messages.length === 0 ? (
           <div className="empty-state">
             <h2>Start a conversation</h2>
@@ -116,8 +121,6 @@ export default function ChatInterface({
             <span>Consulting the council...</span>
           </div>
         )}
-
-        <div ref={messagesEndRef} />
       </div>
 
       {conversation.messages.length === 0 && (

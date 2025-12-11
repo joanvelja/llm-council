@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
+import MarkdownRenderer from './MarkdownRenderer';
 import './Stage2.css';
 
 function deAnonymizeText(text, labelToModel) {
@@ -47,27 +47,27 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
         <div className="ranking-model">
           {rankings[activeTab].model}
         </div>
-        <div className="ranking-content markdown-content">
-          <ReactMarkdown>
-            {deAnonymizeText(rankings[activeTab].ranking, labelToModel)}
-          </ReactMarkdown>
+        <div className="ranking-content">
+          <MarkdownRenderer
+            content={deAnonymizeText(rankings[activeTab].ranking, labelToModel)}
+          />
         </div>
 
         {rankings[activeTab].parsed_ranking &&
-         rankings[activeTab].parsed_ranking.length > 0 && (
-          <div className="parsed-ranking">
-            <strong>Extracted Ranking:</strong>
-            <ol>
-              {rankings[activeTab].parsed_ranking.map((label, i) => (
-                <li key={i}>
-                  {labelToModel && labelToModel[label]
-                    ? labelToModel[label].split('/')[1] || labelToModel[label]
-                    : label}
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
+          rankings[activeTab].parsed_ranking.length > 0 && (
+            <div className="parsed-ranking">
+              <strong>Extracted Ranking:</strong>
+              <ol>
+                {rankings[activeTab].parsed_ranking.map((label, i) => (
+                  <li key={i}>
+                    {labelToModel && labelToModel[label]
+                      ? labelToModel[label].split('/')[1] || labelToModel[label]
+                      : label}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
       </div>
 
       {aggregateRankings && aggregateRankings.length > 0 && (

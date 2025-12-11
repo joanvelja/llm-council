@@ -1,0 +1,25 @@
+/* Display math styling - contain overflow and reset KaTeX defaults */
+.markdown-content .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 0;
+    margin: 0.5em 0;
+    /* Reduce KaTeX's default 1em margin */
+}
+
+/* Prevent display math container from expanding page height */
+.markdown-content .katex-display>.katex {
+    text-align: center;
+}
+
+/* Code block styling overrides */
+.markdown-content pre {
+    margin: 0 0 12px 0;
+    border-radius: 6px;
+}
+
+/* Syntax highlighter container */
+.markdown-content pre>div {
+    border-radius: 6px;
+    font-size: 0.9em;
+}

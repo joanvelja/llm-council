@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
+import MarkdownRenderer from './MarkdownRenderer';
 import './Stage1.css';
 
 export default function Stage1({ responses }) {
@@ -27,8 +27,8 @@ export default function Stage1({ responses }) {
 
       <div className="tab-content">
         <div className="model-name">{responses[activeTab].model}</div>
-        <div className="response-text markdown-content">
-          <ReactMarkdown>{responses[activeTab].response}</ReactMarkdown>
+        <div className="response-text">
+          <MarkdownRenderer content={responses[activeTab].response} />
         </div>
       </div>
     </div>
