@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -31,6 +32,7 @@ function normalizeMathDelimiters(text) {
  * MarkdownRenderer - Unified markdown rendering with math and code support.
  *
  * Features:
+ * - GitHub Flavored Markdown (tables, strikethrough, task lists, autolinks)
  * - LaTeX math rendering via KaTeX (supports $...$ and $$...$$)
  * - Automatic normalization of LLM-specific delimiters (\(...\), \[...\])
  * - Syntax highlighting for fenced code blocks
@@ -44,7 +46,7 @@ export default function MarkdownRenderer({ content, className }) {
     return (
         <div className={`markdown-content ${className ?? ''}`}>
             <ReactMarkdown
-                remarkPlugins={[remarkMath]}
+                remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeKatex]}
                 components={{
                     code({ inline, className: codeClassName, children, ...props }) {

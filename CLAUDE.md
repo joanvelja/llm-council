@@ -72,11 +72,20 @@ LLM Council is a 3-stage deliberation system where multiple LLMs collaboratively
 - Final synthesized answer from chairman
 - Green-tinted background (#f0fff0) to highlight conclusion
 
+**`components/MarkdownRenderer/`** - Unified Rendering Component
+- Centralized markdown rendering with extended features
+- **Math support**: KaTeX via `remark-math` + `rehype-katex`
+- **LLM delimiter normalization**: Converts `\(...\)` → `$...$` and `\[...\]` → `$$...$$`
+- **GFM tables**: Full table support via `remark-gfm`
+- **Syntax highlighting**: Prism via `react-syntax-highlighter` with `oneLight` theme
+- All Stage components import this instead of using `react-markdown` directly
+
 **Styling (`*.css`)**
 - Light mode theme (not dark mode)
 - Primary color: #4a90e2 (blue)
 - Global markdown styling in `index.css` with `.markdown-content` class
 - 12px padding on all markdown content to prevent cluttered appearance
+- `MarkdownRenderer.css` adds KaTeX overflow handling and table styling
 
 ## Key Design Decisions
 
@@ -120,7 +129,10 @@ All backend modules use relative imports (e.g., `from .config import ...`) not a
 - Update both `backend/main.py` and `frontend/src/api.js` if changing
 
 ### Markdown Rendering
-All ReactMarkdown components must be wrapped in `<div className="markdown-content">` for proper spacing. This class is defined globally in `index.css`.
+- All content uses `MarkdownRenderer` component (in `components/MarkdownRenderer/`)
+- **Do NOT use `react-markdown` directly** — always use `MarkdownRenderer` for consistency
+- Math delimiters are auto-normalized before parsing
+- Tables require proper GFM format (pipe separators + header row)
 
 ### Model Configuration
 Models are hardcoded in `backend/config.py`. Chairman can be same or different from council members. The current default is Gemini as chairman per user preference.
@@ -139,7 +151,6 @@ Models are hardcoded in `backend/config.py`. Chairman can be same or different f
 - Export conversations to markdown/PDF
 - Model performance analytics over time
 - Custom ranking criteria (not just accuracy/insight)
-- Math-mode aware rendering (LaTeX, etc.) and code rendering (triple backticks blocks)
 
 ## Testing Notes
 
