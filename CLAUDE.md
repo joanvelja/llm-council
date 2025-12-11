@@ -11,45 +11,79 @@ LLM Council is a 3-stage deliberation system where multiple LLMs collaboratively
 ### Backend Structure (`backend/`)
 
 **`config.py`**
-- Contains `COUNCIL_MODELS` (list of OpenRouter model identifiers)
-- Contains `CHAIRMAN_MODEL` (model that synthesizes final answer)
+- Contains `COUNCIL_MODELS` (list of OpenRouter model identifiers) - these are **defaults**
+- Contains `CHAIRMAN_MODEL` (model that synthesizes final answer) - this is the **default**
 - Uses environment variable `OPENROUTER_API_KEY` from `.env`
 - Backend runs on **port 8001** (NOT 8000 - user had another app on 8000)
+- `PROVIDER_REASONING_DEFAULTS`: Dict mapping provider prefixes to reasoning config (e.g., `{"openai": {"effort": "medium"}}`)
+  - Uses longest-prefix matching (e.g., "google/gemini-2.0-flash-thinking" matches before "google")
+  - Supports three parameter types: `effort` (low/medium/high), `max_tokens` (int), or `exclude` (bool)
+- `REASONING_IN_STAGE1` and `REASONING_IN_STAGE2`: Default flags for whether to request reasoning in each stage
+- **Note**: All config values are defaults that can be overridden per-conversation via UI
 
 **`openrouter.py`**
 - `query_model()`: Single async model query
 - `query_models_parallel()`: Parallel queries using `asyncio.gather()`
 - Returns dict with 'content' and optional 'reasoning_details'
 - Graceful degradation: returns None on failure, continues with successful responses
+- Reasoning parameters are injected based on provider defaults and per-conversation overrides
+
+**`models.py`** - Model Validation and Reasoning Detection
+- `validate_model()`: Async validation via OpenRouter API (makes minimal request to check model exists)
+- `get_reasoning_config()`: Returns default reasoning config for a model based on provider prefix matching
+- `supports_reasoning()`: Boolean check if model supports reasoning based on provider
+- `get_available_effort_levels()`: Returns list of effort levels (e.g., ["low", "medium", "high"]) if supported
+- `get_reasoning_param_type()`: Returns "effort", "max_tokens", "exclude", or None
+- Used by frontend to show appropriate reasoning UI controls
 
 **`council.py`** - The Core Logic
+- `CouncilConfig` dataclass: Configuration for a council session
+  - Fields: `council_models` (list), `chairman_model` (str), `reasoning_stage1` (bool), `reasoning_stage2` (bool), `model_reasoning_overrides` (dict)
+  - `from_defaults()`: Creates config from `config.py` defaults
+  - `from_dict()`: Creates config from stored conversation data
+  - `to_dict()`: Serializes config for storage
 - `stage1_collect_responses()`: Parallel queries to all council models
+  - Accepts optional `CouncilConfig` parameter
+  - Applies reasoning parameters dynamically based on provider defaults + overrides
 - `stage2_collect_rankings()`:
   - Anonymizes responses as "Response A, B, C, etc."
   - Creates `label_to_model` mapping for de-anonymization
   - Prompts models to evaluate and rank (with strict format requirements)
   - Returns tuple: (rankings_list, label_to_model_dict)
   - Each ranking includes both raw text and `parsed_ranking` list
+  - Accepts optional `CouncilConfig` parameter
 - `stage3_synthesize_final()`: Chairman synthesizes from all responses + rankings
+  - Accepts optional `CouncilConfig` parameter
 - `parse_ranking_from_text()`: Extracts "FINAL RANKING:" section, handles both numbered lists and plain format
 - `calculate_aggregate_rankings()`: Computes average rank position across all peer evaluations
+- `run_full_council()`: Orchestrates all 3 stages with optional config
 
 **`storage.py`**
 - JSON-based conversation storage in `data/conversations/`
-- Each conversation: `{id, created_at, messages[]}`
+- Each conversation: `{id, created_at, title, messages[], config}`
+- `config` field: Optional per-conversation configuration (council models, chairman, reasoning settings)
+- `create_conversation()`: Now accepts optional `config` parameter to store custom configuration
 - Assistant messages contain: `{role, stage1, stage2, stage3}`
 - Note: metadata (label_to_model, aggregate_rankings) is NOT persisted to storage, only returned via API
+- Config is immutable after conversation creation (enables consistent A/B testing)
 
 **`main.py`**
 - FastAPI app with CORS enabled for localhost:5173 and localhost:3000
-- POST `/api/conversations/{id}/message` returns metadata in addition to stages
-- Metadata includes: label_to_model mapping and aggregate_rankings
+- `POST /api/conversations`: Create new conversation with optional `config` in request body
+- `POST /api/models/validate`: Validate model ID and return capabilities (supports_reasoning, effort_levels, param_type, etc.)
+- `POST /api/conversations/{id}/message`: Send message and run council
+  - Loads config from conversation and passes to `run_full_council()`
+  - Returns metadata in addition to stages
+  - Metadata includes: label_to_model mapping and aggregate_rankings
+- `POST /api/conversations/{id}/message/stream`: Streaming version using Server-Sent Events
 
 ### Frontend Structure (`frontend/src/`)
 
 **`App.jsx`**
 - Main orchestration: manages conversations list and current conversation
-- Handles message sending and metadata storage
+- Handles conversation creation with custom config from `ConversationSetup`
+- Manages message sending and metadata storage
+- Interacts with model validation API during configuration
 - Important: metadata is stored in the UI state for display but not persisted to backend JSON
 
 **`components/ChatInterface.jsx`**
@@ -72,20 +106,30 @@ LLM Council is a 3-stage deliberation system where multiple LLMs collaboratively
 - Final synthesized answer from chairman
 - Green-tinted background (#f0fff0) to highlight conclusion
 
-**`components/MarkdownRenderer/`** - Unified Rendering Component
-- Centralized markdown rendering with extended features
-- **Math support**: KaTeX via `remark-math` + `rehype-katex`
-- **LLM delimiter normalization**: Converts `\(...\)` → `$...$` and `\[...\]` → `$$...$$`
-- **GFM tables**: Full table support via `remark-gfm`
-- **Syntax highlighting**: Prism via `react-syntax-highlighter` with `oneLight` theme
-- All Stage components import this instead of using `react-markdown` directly
+**`components/ModelConfigPanel.jsx`**
+- Reusable component for configuring a single model (council member or chairman)
+- Real-time validation with visual indicators (⏳ validating, ✓ valid, ✗ invalid)
+- Conditional reasoning UI based on model capabilities
+- Displays effort selector for models that support it (low/medium/high)
+- Debounced validation triggers on blur or Enter key
+
+**`components/ConversationSetup.jsx`**
+- Multi-model configuration interface for creating new conversations
+- Allows adding/removing council members dynamically
+- Separate configuration for chairman model
+- "Add Council Member" button to expand the council
+- Creates conversation with custom config on start
+
+**`components/ConfigHeader.jsx`**
+- Displays current conversation's model configuration
+- Shows council members and chairman in a compact header
+- Allows users to see what models are being used for the active conversation
 
 **Styling (`*.css`)**
 - Light mode theme (not dark mode)
 - Primary color: #4a90e2 (blue)
 - Global markdown styling in `index.css` with `.markdown-content` class
 - 12px padding on all markdown content to prevent cluttered appearance
-- `MarkdownRenderer.css` adds KaTeX overflow handling and table styling
 
 ## Key Design Decisions
 
@@ -99,6 +143,23 @@ The Stage 2 prompt is very specific to ensure parseable output:
 ```
 
 This strict format allows reliable parsing while still getting thoughtful evaluations.
+
+### Provider-Based Reasoning Configuration
+- `PROVIDER_REASONING_DEFAULTS` uses prefix matching instead of individual model IDs
+- Longest-prefix-first matching enables specific overrides (e.g., "google/gemini-2.0-flash-thinking" before "google")
+- Three reasoning parameter types:
+  - **Effort-based**: OpenAI, xAI, Google (3+), Mistral - uses `effort: low|medium|high`
+  - **Token-based**: Anthropic, Google (2.0-flash-thinking) - uses `max_tokens: int`
+  - **Exclude-based**: DeepSeek - uses `exclude: bool` to toggle reasoning on/off
+- Per-conversation overrides stored in `CouncilConfig.model_reasoning_overrides`
+- New models from supported providers automatically inherit correct reasoning parameters
+
+### Per-Conversation Configuration
+- Configuration is set at conversation creation and stored in conversation JSON
+- Each conversation can have different council members, chairman, and reasoning settings
+- Enables A/B testing different council compositions without changing defaults
+- Config is immutable after creation to ensure consistency across conversation history
+- UI provides `ConversationSetup` component for easy configuration before starting
 
 ### De-anonymization Strategy
 - Models receive: "Response A", "Response B", etc.
@@ -129,13 +190,15 @@ All backend modules use relative imports (e.g., `from .config import ...`) not a
 - Update both `backend/main.py` and `frontend/src/api.js` if changing
 
 ### Markdown Rendering
-- All content uses `MarkdownRenderer` component (in `components/MarkdownRenderer/`)
-- **Do NOT use `react-markdown` directly** — always use `MarkdownRenderer` for consistency
-- Math delimiters are auto-normalized before parsing
-- Tables require proper GFM format (pipe separators + header row)
+All ReactMarkdown components must be wrapped in `<div className="markdown-content">` for proper spacing. This class is defined globally in `index.css`.
 
 ### Model Configuration
-Models are hardcoded in `backend/config.py`. Chairman can be same or different from council members. The current default is Gemini as chairman per user preference.
+Models in `backend/config.py` serve as **defaults** but can be customized per-conversation via UI:
+- `ConversationSetup` component allows selecting council members and chairman before starting
+- Validation flow: Frontend calls `/api/models/validate` → Backend makes minimal OpenRouter request → Returns capabilities
+- Chairman can be same or different from council members
+- The current defaults use Gemini as chairman per user preference
+- Config is validated on conversation creation and stored immutably in conversation JSON
 
 ## Common Gotchas
 
@@ -143,10 +206,13 @@ Models are hardcoded in `backend/config.py`. Chairman can be same or different f
 2. **CORS Issues**: Frontend must match allowed origins in `main.py` CORS middleware
 3. **Ranking Parse Failures**: If models don't follow format, fallback regex extracts any "Response X" patterns in order
 4. **Missing Metadata**: Metadata is ephemeral (not persisted), only available in API responses
+5. **Model Validation**: Requires valid `OPENROUTER_API_KEY` and network access; validation makes real API calls (minimal cost)
+6. **Config Immutability**: Conversation config cannot be changed after creation; must create new conversation for different models
+7. **Provider Prefix Matching**: Uses longest-first strategy, so specific overrides (e.g., "google/gemini-2.0-flash-thinking") must be defined before general ones (e.g., "google")
+8. **uv**: Use `uv` instead of `pip` for installation, runnning scripts and what have you (e.g., `uv run start.sh`, or `uv run python pytest`)
 
 ## Future Enhancement Ideas
 
-- Configurable council/chairman via UI instead of config file
 - Streaming responses instead of batch loading
 - Export conversations to markdown/PDF
 - Model performance analytics over time

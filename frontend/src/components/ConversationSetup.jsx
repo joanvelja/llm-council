@@ -71,26 +71,43 @@ export default function ConversationSetup({ onStart, onCancel }) {
             },
         };
 
+        // Helper to build reasoning override for a model
+        const buildReasoningOverride = (model) => {
+            if (!model.validationResult?.supports_reasoning || !model.reasoningConfig?.enabled) {
+                return null;
+            }
+
+            const paramType = model.validationResult.reasoning_param_type;
+
+            if (paramType === 'effort') {
+                // Use the middle effort level as default if not specified
+                const defaultEffort = model.validationResult.effort_levels?.[
+                    Math.floor(model.validationResult.effort_levels.length / 2)
+                ] || 'high';
+                return { effort: model.reasoningConfig.effort || defaultEffort };
+            } else if (paramType === 'max_tokens') {
+                const defaultTokens = model.validationResult.max_tokens_range?.default || 4096;
+                return { max_tokens: model.reasoningConfig.max_tokens || defaultTokens };
+            } else if (paramType === 'exclude') {
+                // enabled=true means exclude=false (reasoning ON)
+                return { exclude: false };
+            }
+
+            return null;
+        };
+
         // Add per-model reasoning overrides
         councilModels.forEach(model => {
-            if (model.validationResult?.supports_reasoning && model.reasoningConfig?.enabled) {
-                const paramType = model.validationResult.reasoning_param_type;
-                if (paramType === 'effort') {
-                    config.reasoning.model_overrides[model.id] = {
-                        effort: model.reasoningConfig.effort || 'medium',
-                    };
-                }
+            const override = buildReasoningOverride(model);
+            if (override) {
+                config.reasoning.model_overrides[model.id] = override;
             }
         });
 
         // Add chairman reasoning override
-        if (chairmanModel.validationResult?.supports_reasoning && chairmanModel.reasoningConfig?.enabled) {
-            const paramType = chairmanModel.validationResult.reasoning_param_type;
-            if (paramType === 'effort') {
-                config.reasoning.model_overrides[chairmanModel.id] = {
-                    effort: chairmanModel.reasoningConfig.effort || 'medium',
-                };
-            }
+        const chairmanOverride = buildReasoningOverride(chairmanModel);
+        if (chairmanOverride) {
+            config.reasoning.model_overrides[chairmanModel.id] = chairmanOverride;
         }
 
         onStart(config);

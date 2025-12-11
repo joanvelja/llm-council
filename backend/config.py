@@ -56,3 +56,14 @@ PROVIDER_REASONING_DEFAULTS = {
     # Mistral: Anticipating effort support
     "mistral": {"effort": "medium"},
 }
+
+# Effort levels supported per provider prefix
+# Uses longest-prefix matching like PROVIDER_REASONING_DEFAULTS
+PROVIDER_EFFORT_LEVELS = {
+    # Full support: low, medium, high
+    "openai": ["low", "medium", "high"],
+    "x-ai": ["low", "medium", "high"],
+    "mistral": ["low", "medium", "high"],
+    # Gemini 3+ only supports low and high (no medium)
+    "google": ["low", "high"],
+}

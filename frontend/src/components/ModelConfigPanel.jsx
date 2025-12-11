@@ -22,6 +22,7 @@ export default function ModelConfigPanel({
         supportsReasoning: false,
         effortLevels: [],
         reasoningParamType: null,
+        maxTokensRange: null,
     });
 
     // Debounced validation
@@ -34,6 +35,7 @@ export default function ModelConfigPanel({
                 supportsReasoning: false,
                 effortLevels: [],
                 reasoningParamType: null,
+                maxTokensRange: null,
             });
             return;
         }
@@ -49,6 +51,7 @@ export default function ModelConfigPanel({
                 supportsReasoning: result.supports_reasoning,
                 effortLevels: result.effort_levels || [],
                 reasoningParamType: result.reasoning_param_type,
+                maxTokensRange: result.max_tokens_range || null,
             });
 
             // Notify parent of validation result
@@ -61,6 +64,7 @@ export default function ModelConfigPanel({
                 supportsReasoning: false,
                 effortLevels: [],
                 reasoningParamType: null,
+                maxTokensRange: null,
             });
         }
     }, [onModelChange]);
@@ -99,8 +103,18 @@ export default function ModelConfigPanel({
         });
     };
 
+    const handleMaxTokensChange = (value) => {
+        const tokens = parseInt(value, 10);
+        if (!isNaN(tokens)) {
+            onReasoningChange({
+                ...reasoningConfig,
+                max_tokens: tokens,
+            });
+        }
+    };
+
     const roleLabel = role === 'chairman' ? 'Chairman' : 'Council Member';
-    const { isValidating, isValid, error, supportsReasoning, effortLevels } = validationState;
+    const { isValidating, isValid, error, supportsReasoning, effortLevels, reasoningParamType, maxTokensRange } = validationState;
 
     return (
         <div className={`model-config-panel ${isValid === false ? 'invalid' : ''}`}>
@@ -140,20 +154,49 @@ export default function ModelConfigPanel({
                         Enable Reasoning
                     </label>
 
-                    {reasoningConfig?.enabled && effortLevels.length > 0 && (
-                        <div className="effort-select">
-                            <label>Effort:</label>
-                            <select
-                                value={reasoningConfig?.effort || 'medium'}
-                                onChange={(e) => handleEffortChange(e.target.value)}
-                            >
-                                {effortLevels.map((level) => (
-                                    <option key={level} value={level}>
-                                        {level.charAt(0).toUpperCase() + level.slice(1)}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                    {reasoningConfig?.enabled && (
+                        <>
+                            {/* Effort-based providers (OpenAI, Gemini 3+, xAI, Mistral) */}
+                            {reasoningParamType === 'effort' && effortLevels.length > 0 && (
+                                <div className="effort-select">
+                                    <label>Effort:</label>
+                                    <select
+                                        value={reasoningConfig?.effort || effortLevels[Math.floor(effortLevels.length / 2)]}
+                                        onChange={(e) => handleEffortChange(e.target.value)}
+                                    >
+                                        {effortLevels.map((level) => (
+                                            <option key={level} value={level}>
+                                                {level.charAt(0).toUpperCase() + level.slice(1)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* Token-based providers (Anthropic, older Gemini) */}
+                            {reasoningParamType === 'max_tokens' && maxTokensRange && (
+                                <div className="token-budget">
+                                    <label>Token Budget:</label>
+                                    <input
+                                        type="number"
+                                        min={maxTokensRange.min}
+                                        max={maxTokensRange.max}
+                                        value={reasoningConfig?.max_tokens || maxTokensRange.default}
+                                        onChange={(e) => handleMaxTokensChange(e.target.value)}
+                                    />
+                                    <span className="token-hint">
+                                        ({maxTokensRange.min.toLocaleString()} - {maxTokensRange.max.toLocaleString()})
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* Exclude-based providers (DeepSeek) */}
+                            {reasoningParamType === 'exclude' && (
+                                <span className="exclude-hint">
+                                    Reasoning controlled by toggle above
+                                </span>
+                            )}
+                        </>
                     )}
                 </div>
             )}

@@ -66,8 +66,15 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .remove-btn {
@@ -139,4 +146,36 @@
 .effort-select select:focus {
   outline: none;
   border-color: #4a90e2;
+}
+
+.token-budget {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.token-budget input[type="number"] {
+  width: 100px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.token-budget input[type="number"]:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.token-hint {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.exclude-hint {
+  font-size: 0.85rem;
+  color: #888;
+  font-style: italic;
 }
